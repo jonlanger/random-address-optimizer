@@ -8,33 +8,24 @@
   <script src="https://unpkg.com/gestalt/dist/gestalt.js"></script>
   <style>
     body {
-      background-color: #1c1c1e;
-      color: white;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
+      background-color: #f0f0f0;
     }
     .app-container {
-      background-color: #2c2c2e;
+      background: white;
       padding: 32px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       border-radius: 32px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      max-width: 600px;
-      width: 100%;
     }
     #map {
       height: 400px;
       width: 100%;
       border-radius: 32px;
-      overflow: hidden;
-    }
-    .toast-container {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 1000;
+      margin-top: 16px;
     }
   </style>
 </head>
@@ -42,16 +33,16 @@
   <div class="app-container">
     <Box padding={4}>
       <Box marginBottom={4}>
-        <Heading size="md" color="white">Random Address Route Optimizer</Heading>
+        <Heading size="md">Random Address Route Optimizer</Heading>
       </Box>
       <Box marginBottom={4}>
         <Label htmlFor="numAddresses">
-          <Text color="white">Number of Addresses:</Text>
+          <Text>Number of Addresses:</Text>
         </Label>
         <TextField id="numAddresses" onChange={() => {}} value="5" type="number" min="2" />
       </Box>
       <Box marginBottom={4}>
-        <Button text="Generate Addresses" color="red" onClick={() => generateRandomAddresses()} />
+        <Button text="Generate Addresses" color="red" onClick={generateRandomAddresses} />
       </Box>
       <Box marginBottom={4} id="addressList">
         <!-- Addresses will be listed here -->
@@ -61,8 +52,6 @@
       </Box>
     </Box>
   </div>
-  
-  <div class="toast-container" id="toastContainer"></div>
   
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVf5y9uQLX51fk0jiXcJaJMOUlWv-_gt8&callback=initMap" async defer></script>
   <script>
@@ -78,6 +67,7 @@
 
       document.getElementById("generateAddresses").addEventListener("click", () => {
         generateRandomAddresses(map, directionsService, directionsRenderer);
+        showSuccessToast();
       });
     }
 
@@ -94,7 +84,6 @@
 
       displayAddresses(addresses);
       calculateAndDisplayRoute(directionsService, directionsRenderer, addresses);
-      showToast();
     }
 
     function displayAddresses(addresses) {
@@ -132,18 +121,18 @@
       );
     }
 
-    function showToast() {
-      const toastContainer = document.getElementById("toastContainer");
-      const toast = (
-        <div class="gestalt-toast">
-          <Text color="white">Addresses generated successfully!</Text>
-        </div>
-      );
+    function showSuccessToast() {
+      const container = document.createElement('div');
+      container.className = 'absolute w-full h-full flex justify-center items-center';
+      document.body.appendChild(container);
 
-      ReactDOM.render(toast, toastContainer);
+      const toast = document.createElement('div');
+      toast.className = 'p-4 bg-green-600 text-white rounded shadow-lg';
+      toast.innerText = 'Addresses generated successfully!';
+      container.appendChild(toast);
 
       setTimeout(() => {
-        ReactDOM.unmountComponentAtNode(toastContainer);
+        container.remove();
       }, 3000);
     }
   </script>
