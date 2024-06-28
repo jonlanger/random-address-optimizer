@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Address Route Optimizer</title>
+  <link rel="stylesheet" href="https://unpkg.com/gestalt/dist/gestalt.css">
+  <script src="https://unpkg.com/gestalt/dist/gestalt.js"></script>
+  <style>
+    body {
+      background-color: #1c1c1e;
+      color: white;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+    .gestalt-toast {
+      background-color: #2c2c2e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <Box padding={4}>
+    <Box marginBottom={4}>
+      <Heading size="md" color="white">Random Address Route Optimizer</Heading>
+    </Box>
+    <Box marginBottom={4}>
+      <Label htmlFor="numAddresses">
+        <Text color="white">Number of Addresses:</Text>
+      </Label>
+      <TextField id="numAddresses" onChange={() => {}} value="5" type="number" min="2" />
+    </Box>
+    <Box marginBottom={4}>
+      <Button text="Generate Addresses" color="red" onClick={generateRandomAddresses} />
+    </Box>
+    <Box marginBottom={4} id="addressList">
+      <!-- Addresses will be listed here -->
+    </Box>
+    <Box height={400}>
+      <div id="map" style={{ height: '100%', width: '100%' }}></div>
+    </Box>
+  </Box>
+  
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVf5y9uQLX51fk0jiXcJaJMOUlWv-_gt8&callback=initMap" async defer></script>
+  <script>
+    function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 12,
+        center: { lat: 40.73061, lng: -73.935242 } // Default to New York City
+      });
+
+      const directionsService = new google.maps.DirectionsService();
+      const directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
+
+      document.getElementById("generateAddresses").addEventListener("click", () => {
+        generateRandomAddresses(map, directionsService, directionsRenderer);
+      });
+    }
+
+    function generateRandomAddresses(map, directionsService, directionsRenderer) {
+      const numAddresses = document.getElementById("numAddresses").value;
+      const center = { lat: 40.73061, lng: -73.935242 }; // Default to New York City
+      const addresses = [];
+
+      for (let i = 0; i < numAddresses; i++) {
+        const latOffset = (Math.random() - 0.5) / 100;
+        const lngOffset = (Math.random() - 0.5) / 100;
+        addresses.push({ lat: center.lat + latOffset, lng: center.lng + lngOffset });
+      }
+
+      displayAddresses(addresses);
+      calculateAndDisplayRoute(directionsService, directionsRenderer, addresses);
+    }
+
+    function displayAddresses(addresses) {
+      const addressList = document.getElementById("addressList");
+      addressList.innerHTML = "";
+
+      addresses.forEach((address, index) => {
+        const addressItem = document.createElement("div");
+        addressItem.innerText = `Address ${index + 1}: (${address.lat.toFixed(5)}, ${address.lng.toFixed(5)})`;
+        addressList.appendChild(addressItem);
+      });
+    }
+
+    function calculateAndDisplayRoute(directionsService, directionsRenderer, addresses) {
+      const waypoints = addresses.slice(1, -1).map(address => ({
+        location: new google.maps.LatLng(address.lat, address.lng),
+        stopover: true
+      }));
+
+      directionsService.route(
+        {
+          origin: new google.maps.LatLng(addresses[0].lat, addresses[0].lng),
+          destination: new google.maps.LatLng(addresses[addresses.length - 1].lat, addresses[addresses.length - 1].lng),
+          waypoints: waypoints,
+          optimizeWaypoints: true,
+          travelMode: 'DRIVING'
+        },
+        (response, status) => {
+          if (status === 'OK') {
+            directionsRenderer.setDirections(response);
+          } else {
+            alert('Directions request failed due to ' + status);
+          }
+        }
+      );
+    }
+  </script>
+</body>
+</html>
